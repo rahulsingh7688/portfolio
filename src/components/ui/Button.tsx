@@ -8,8 +8,7 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary:
-    'bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold',
+  primary: 'bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold',
   secondary:
     'border-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950 rounded-lg font-semibold',
   ghost:
@@ -22,6 +21,11 @@ const sizeStyles: Record<ButtonSize, string> = {
   lg: 'px-8 py-4 text-lg min-h-[44px]',
 };
 
+// Conflicting event props that Framer Motion redefines with incompatible signatures
+type ConflictingProps =
+  | 'onDrag' | 'onDragStart' | 'onDragEnd' | 'onDragEnter' | 'onDragExit' | 'onDragLeave' | 'onDragOver'
+  | 'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration';
+
 interface ButtonBaseProps {
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -30,12 +34,12 @@ interface ButtonBaseProps {
 }
 
 type ButtonAsButton = ButtonBaseProps &
-  Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof ButtonBaseProps> & {
+  Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof ButtonBaseProps | ConflictingProps> & {
     as?: 'button';
   };
 
 type ButtonAsAnchor = ButtonBaseProps &
-  Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof ButtonBaseProps> & {
+  Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof ButtonBaseProps | ConflictingProps> & {
     as: 'a';
   };
 
@@ -59,7 +63,10 @@ export function Button({
   );
 
   if (as === 'a') {
-    const anchorProps = rest as React.AnchorHTMLAttributes<HTMLAnchorElement>;
+    const { ...anchorProps } = rest as Omit<
+      React.AnchorHTMLAttributes<HTMLAnchorElement>,
+      ConflictingProps
+    >;
     return (
       <motion.a
         className={classes}
@@ -73,7 +80,10 @@ export function Button({
     );
   }
 
-  const buttonProps = rest as React.ButtonHTMLAttributes<HTMLButtonElement>;
+  const { ...buttonProps } = rest as Omit<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    ConflictingProps
+  >;
   return (
     <motion.button
       className={classes}
