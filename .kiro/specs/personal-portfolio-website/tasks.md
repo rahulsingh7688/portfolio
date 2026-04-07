@@ -1,0 +1,241 @@
+# Implementation Plan: Personal Portfolio Website
+
+## Overview
+
+Incremental build of Rahul Singh's Next.js 14 (App Router) portfolio site. Each task produces working, integrated code. Static data is established first, then layout, then sections, then dynamic routes, then API, then SEO/sitemap, then tests.
+
+## Tasks
+
+- [x] 1. Scaffold project and configure tooling
+  - Run `npx create-next-app@latest` with App Router, TypeScript, and Tailwind CSS
+  - Install dependencies: `framer-motion`, `next-themes`, `react-hook-form`, `zod`, `lucide-react`, `fast-check`, `vitest`, `@vitest/coverage-v8`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom`
+  - Configure `vitest.config.ts` with jsdom environment, globals, and `setupFiles: ['./src/test/setup.ts']`
+  - Create `src/test/setup.ts` importing `@testing-library/jest-dom`
+  - Configure `tailwind.config.ts` with `darkMode: 'class'` and content paths
+  - Add `tailwindcss-animate` plugin to Tailwind config
+  - _Requirements: 11.1, 13.2_
+
+- [x] 2. Create static data files
+  - [x] 2.1 Create `lib/data/projects.ts` with all five `Project` objects (FarmerPay+, LaTeX OCR Model, Data Warehouse Modernization, Analytics Dashboard Platform, Web Metrics Analytics System) including full `caseStudy` fields
+    - _Requirements: 4.1, 4.7, 4.8, 4.9, 4.10, 4.11_
+  - [x] 2.2 Create `lib/data/skills.ts` with four `SkillCategory` objects covering all required skills with proficiency values 1–5
+    - _Requirements: 3.1, 3.3_
+  - [x] 2.3 Create `lib/data/experience.ts` with at least three `ExperienceEntry` objects in reverse chronological order, marking the current role with `isCurrent: true`
+    - _Requirements: 5.1, 5.3, 5.4_
+  - [x] 2.4 Create `lib/data/services.ts` with four `Service` objects (Data Analytics & BI, AI/ML Model Development, Backend API Development, Data Warehouse Design & Migration)
+    - _Requirements: 7.1, 7.2_
+  - [x] 2.5 Create `lib/data/testimonials.ts` with three placeholder `Testimonial` objects
+    - _Requirements: 8.1, 8.2_
+  - [x] 2.6 Create `lib/data/certifications.ts` with two `Certification` objects (Google Associate Data Analyst, Data Warehouse Management Certification)
+    - _Requirements: 6.1, 6.2_
+  - [x] 2.7 Create `lib/validations.ts` with Zod schema `contactSchema` validating name, email, subject, and message (min 10 chars)
+    - _Requirements: 9.2, 9.4_
+  - [x] 2.8 Create `lib/utils.ts` with a `cn` helper (clsx + tailwind-merge) and any shared utility functions
+    - _Requirements: 13.2_
+
+- [x] 3. Build UI primitives
+  - [x] 3.1 Create `components/ui/Button.tsx` — polymorphic button with `variant` (primary/secondary/ghost) and `size` props; minimum 44×44px touch target; hover scale transition via Framer Motion
+    - _Requirements: 13.4, 14.3_
+  - [x] 3.2 Create `components/ui/SectionWrapper.tsx` — Client Component wrapping children in a `motion.section` with `useInView`; supports `animationVariant` prop (`fadeUp` | `fadeIn` | `stagger`); reads `prefers-reduced-motion` and disables animation when set
+    - _Requirements: 14.2, 14.4_
+  - [x] 3.3 Create `components/ui/ProjectCard.tsx` — displays title, summary, stack badges, filter tags, and "View Case Study" link to `/projects/{slug}`; hover scale/shadow effect
+    - _Requirements: 4.2, 4.5, 14.3_
+  - [x] 3.4 Create `components/ui/SkillBadge.tsx` — displays skill name and a proficiency bar (width driven by `proficiency / 5 * 100%`); tooltip on hover showing skill name
+    - _Requirements: 3.2, 3.4_
+  - [x] 3.5 Create `components/ui/TimelineEntry.tsx` — displays title, company, dateRange, description; visually highlights current role with a "Current" badge when `isCurrent` is true
+    - _Requirements: 5.2, 5.4_
+  - [x] 3.6 Create `components/ui/TestimonialCard.tsx` — displays avatar placeholder, name, role/company, and quote
+    - _Requirements: 8.2_
+  - [x] 3.7 Create `components/ui/ServiceCard.tsx` — displays Lucide icon, title, and outcome-focused description
+    - _Requirements: 7.2_
+  - [x] 3.8 Create `components/ui/CertBadge.tsx` — displays certification name, issuing organization, badge icon, and optional "Verify" link opening in a new tab with `rel="noopener noreferrer"`
+    - _Requirements: 6.2, 6.3_
+
+- [x] 4. Build layout components
+  - [x] 4.1 Create `components/layout/ThemeToggle.tsx` — Client Component; sun/moon icon button toggling theme via `next-themes` `setTheme`; switches within 200ms
+    - _Requirements: 11.2, 11.3_
+  - [x] 4.2 Create `components/layout/MobileMenu.tsx` — Client Component; slide-in overlay triggered by hamburger icon; renders nav links; closes on link click
+    - _Requirements: 10.5, 10.6_
+  - [x] 4.3 Create `components/layout/Navbar.tsx` — Client Component; sticky top bar with `NAV_ITEMS` links; uses `IntersectionObserver` to set active link; renders `ThemeToggle`; collapses to hamburger below 768px using `MobileMenu`; smooth-scroll on link click
+    - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
+  - [x] 4.4 Create `components/layout/Footer.tsx` — displays GitHub, LinkedIn, email links and copyright
+    - _Requirements: 9.6_
+  - [x] 4.5 Create `app/layout.tsx` — root layout wrapping children in `ThemeProvider` (next-themes, `attribute="class"`, `defaultTheme="system"`, `storageKey="portfolio-theme"`), `Navbar`, and `Footer`; includes semantic `<html>`, `<body>`, `<main>`
+    - _Requirements: 11.4, 11.5, 12.2_
+
+- [x] 5. Build homepage section components
+  - [x] 5.1 Create `components/sections/Hero.tsx` — H1 headline, subtitle, "Hire Me" / "View My Work" / "Download Resume" CTAs, GitHub + LinkedIn links; Framer Motion staggered entrance (total ≤ 1.2s); responsive from 320px
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9_
+  - [x] 5.2 Create `components/sections/About.tsx` — narrative summary, three quantified achievements, profile image (`next/image` with alt text), "Hire Me" CTA
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
+  - [x] 5.3 Create `components/sections/Skills.tsx` — renders four `SkillCategory` groups each containing `SkillBadge` components; wrapped in `SectionWrapper`
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+  - [x] 5.4 Create `components/sections/Projects.tsx` — Client Component; renders filter tag buttons (All, AI, Data, Backend); filters `PROJECTS` array on click within 300ms; renders `ProjectCard` for each visible project; Framer Motion staggered entrance on viewport entry
+    - _Requirements: 4.1, 4.3, 4.4, 4.12_
+  - [x] 5.5 Create `components/sections/Experience.tsx` — renders `TimelineEntry` for each entry in `EXPERIENCE`; Framer Motion sequential entrance on scroll
+    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
+  - [x] 5.6 Create `components/sections/Certifications.tsx` — renders `CertBadge` for each certification
+    - _Requirements: 6.1, 6.2, 6.3_
+  - [x] 5.7 Create `components/sections/Services.tsx` — renders `ServiceCard` for each service; "Hire Me" CTA linking to `#contact`
+    - _Requirements: 7.1, 7.2, 7.3, 7.4_
+  - [x] 5.8 Create `components/sections/Testimonials.tsx` — renders `TestimonialCard` in a card grid; on viewports < 768px shows one card at a time with prev/next navigation controls
+    - _Requirements: 8.1, 8.2, 8.3, 8.4_
+  - [x] 5.9 Create `components/forms/ContactForm.tsx` — Client Component; React Hook Form + `contactSchema`; fields: name, email, subject, message; inline validation errors; `status` state machine (idle → submitting → success | error); preserves data on error
+    - _Requirements: 9.2, 9.3, 9.4, 9.5_
+  - [x] 5.10 Create `components/sections/Contact.tsx` — wraps `ContactForm`; displays GitHub, LinkedIn, email links; "Download Resume" button
+    - _Requirements: 9.1, 9.6, 9.7_
+
+- [x] 6. Assemble homepage
+  - Create `app/page.tsx` composing all section components in order: Hero, About, Skills, Projects, Experience, Certifications, Services, Testimonials, Contact
+  - Each section receives its `id` prop matching the nav href anchor
+  - _Requirements: 1.1, 2.1, 12.2_
+
+- [ ] 7. Checkpoint — verify homepage renders end-to-end
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 8. Implement case study dynamic pages
+  - [x] 8.1 Create `app/projects/[slug]/page.tsx` with `generateStaticParams` returning all five project slugs; call `notFound()` for unknown slugs; render problem → solution → impact sections using data from `PROJECTS`
+    - _Requirements: 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11_
+  - [ ]* 8.2 Write unit tests for case study page rendering
+    - Test that each of the five slugs renders problem, solution, and impact content
+    - Test that an unknown slug triggers `notFound()`
+    - _Requirements: 4.6_
+
+- [x] 9. Implement contact form API route
+  - Create `app/api/contact/route.ts` — Edge Runtime POST handler; parse body; run server-side Zod validation; return 400 with error details on invalid input; dispatch email via Resend/Nodemailer; return `{ success: true }` on success or `{ success: false, message }` on failure
+  - _Requirements: 9.3, 9.5_
+
+- [x] 10. Add SEO metadata
+  - [x] 10.1 Add `generateMetadata` to `app/page.tsx` returning title, description, openGraph (title, description, image, type), and `alternates.canonical` for the homepage
+    - _Requirements: 12.1_
+  - [x] 10.2 Add `generateMetadata` to `app/projects/[slug]/page.tsx` returning per-project title, description, openGraph fields, and canonical URL
+    - _Requirements: 12.1_
+  - [x] 10.3 Create `app/sitemap.ts` using Next.js sitemap API; include homepage and all five `/projects/[slug]` URLs
+    - _Requirements: 12.5_
+  - [x] 10.4 Create `app/robots.ts` using Next.js robots API; allow all crawlers; point to sitemap URL
+    - _Requirements: 12.5_
+
+- [ ] 11. Checkpoint — verify routing, API, and SEO
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 12. Write unit tests
+  - [x] 12.1 Write `src/__tests__/unit/Hero.test.tsx` — renders H1 headline, subtitle, all three CTA buttons, GitHub and LinkedIn links; resume link has `download` attribute
+    - _Requirements: 1.2, 1.3, 1.4, 1.5, 1.6, 1.8_
+  - [x] 12.2 Write `src/__tests__/unit/About.test.tsx` — renders at least three achievement items; profile image has non-empty alt text; "Hire Me" CTA present
+    - _Requirements: 2.3, 2.4, 2.5_
+  - [x] 12.3 Write `src/__tests__/unit/Skills.test.tsx` — renders four category headings; all required skills appear; each skill has a proficiency indicator element
+    - _Requirements: 3.1, 3.2, 3.3_
+  - [x] 12.4 Write `src/__tests__/unit/Projects.test.tsx` — "All" filter shows ≥ 5 cards; clicking "AI" filter hides non-AI cards; clicking "Data" filter hides non-Data cards; each card has a "View Case Study" link
+    - _Requirements: 4.1, 4.3, 4.4, 4.5_
+  - [x] 12.5 Write `src/__tests__/unit/Experience.test.tsx` — all entries render title, company, dateRange, description; current role has "Current" badge
+    - _Requirements: 5.2, 5.4_
+  - [x] 12.6 Write `src/__tests__/unit/Certifications.test.tsx` — renders ≥ 2 certification badges; each has name, org, and badge element; verify link opens in new tab
+    - _Requirements: 6.1, 6.2, 6.3_
+  - [x] 12.7 Write `src/__tests__/unit/Services.test.tsx` — renders ≥ 4 service cards; each has title, description, icon; "Hire Me" CTA links to `#contact`
+    - _Requirements: 7.1, 7.2, 7.3_
+  - [x] 12.8 Write `src/__tests__/unit/Testimonials.test.tsx` — renders ≥ 3 testimonials; each has name, role/company, quote
+    - _Requirements: 8.1, 8.2_
+  - [x] 12.9 Write `src/__tests__/unit/Contact.test.tsx` — submitting empty form shows inline errors; submitting valid data reaches success state; network error preserves form data and shows error message; GitHub/LinkedIn/email links present
+    - _Requirements: 9.3, 9.4, 9.5, 9.6_
+  - [x] 12.10 Write `src/__tests__/unit/Navbar.test.tsx` — all nav links render; active class applied to link matching mocked intersecting section; hamburger menu opens/closes `MobileMenu`; `prefers-reduced-motion` mock disables animation
+    - _Requirements: 10.2, 10.4, 10.5, 10.6_
+  - [x] 12.11 Write `src/__tests__/unit/ThemeToggle.test.tsx` — clicking toggle calls `setTheme`; localStorage key `portfolio-theme` is written with correct value
+    - _Requirements: 11.2, 11.3, 11.5_
+
+- [ ] 13. Write property-based tests
+  - [ ] 13.1 Write `src/__tests__/property/skills.property.test.ts`
+    - [ ]* 13.1.1 Write property test for Property 3: Required skills membership
+      - `// Feature: personal-portfolio-website, Property 3: Required skills membership`
+      - Generator: `fc.shuffledSubarray` of required skills merged with arbitrary extras
+      - Assert all required skills appear in rendered output
+      - `{ numRuns: 100 }`
+      - _Requirements: 3.3_
+    - [ ]* 13.1.2 Write property test for Property 4: Proficiency indicator presence
+      - `// Feature: personal-portfolio-website, Property 4: Skills proficiency indicator presence`
+      - Generator: `fc.array(fc.record({ name: fc.string({ minLength: 1 }), proficiency: fc.integer({ min: 1, max: 5 }) }))`
+      - Assert each rendered skill has a proficiency indicator element in the DOM
+      - `{ numRuns: 100 }`
+      - _Requirements: 3.2_
+  - [ ] 13.2 Write `src/__tests__/property/projects.property.test.ts`
+    - [ ]* 13.2.1 Write property test for Property 6: Project card required fields
+      - `// Feature: personal-portfolio-website, Property 6: Project card required fields`
+      - Generator: `fc.record` with arbitrary title, summary, stack array, tags array, slug
+      - Assert rendered card contains title, summary, at least one stack item, at least one tag
+      - `{ numRuns: 100 }`
+      - _Requirements: 4.2_
+    - [ ]* 13.2.2 Write property test for Property 7: Project filter correctness
+      - `// Feature: personal-portfolio-website, Property 7: Project filter correctness`
+      - Generator: `fc.constantFrom('AI','Data','Backend')` + `fc.array` of project records with arbitrary tags
+      - Assert all visible cards after filtering include the selected tag; no card without the tag is visible
+      - `{ numRuns: 100 }`
+      - _Requirements: 4.4_
+    - [ ]* 13.2.3 Write property test for Property 8: Project card case study link
+      - `// Feature: personal-portfolio-website, Property 8: Project card case study link`
+      - Generator: `fc.record` with arbitrary slug string
+      - Assert rendered card contains a link with `href` equal to `/projects/{slug}`
+      - `{ numRuns: 100 }`
+      - _Requirements: 4.5_
+    - [ ]* 13.2.4 Write property test for Property 9: Case study structure completeness
+      - `// Feature: personal-portfolio-website, Property 9: Case study structure completeness`
+      - Generator: `fc.record({ problem: fc.string({ minLength: 1 }), solution: fc.string({ minLength: 1 }), impact: fc.string({ minLength: 1 }) })`
+      - Assert rendered case study page contains problem, solution, and impact sections
+      - `{ numRuns: 100 }`
+      - _Requirements: 4.6_
+  - [ ] 13.3 Write `src/__tests__/property/experience.property.test.ts`
+    - [ ]* 13.3.1 Write property test for Property 10: Experience timeline ordering
+      - `// Feature: personal-portfolio-website, Property 10: Experience timeline ordering`
+      - Generator: `fc.array` of `ExperienceEntry` records with arbitrary ISO date strings for start year
+      - Assert rendered entries appear in reverse chronological order
+      - `{ numRuns: 100 }`
+      - _Requirements: 5.1_
+    - [ ]* 13.3.2 Write property test for Property 11: Timeline entry required fields
+      - `// Feature: personal-portfolio-website, Property 11: Timeline entry required fields`
+      - Generator: `fc.record({ title: fc.string({ minLength: 1 }), company: fc.string({ minLength: 1 }), dateRange: fc.string({ minLength: 1 }), description: fc.string({ minLength: 1 }), isCurrent: fc.boolean() })`
+      - Assert rendered entry displays all four fields
+      - `{ numRuns: 100 }`
+      - _Requirements: 5.2_
+  - [ ] 13.4 Write `src/__tests__/property/contact-form.property.test.ts`
+    - [ ]* 13.4.1 Write property test for Property 18: Valid form submission succeeds
+      - `// Feature: personal-portfolio-website, Property 18: Contact form valid submission succeeds`
+      - Generator: `fc.record({ name: fc.string({ minLength: 1 }), email: fc.emailAddress(), subject: fc.string({ minLength: 1 }), message: fc.string({ minLength: 10 }) })`
+      - Mock fetch to return `{ success: true }`; assert form reaches success state
+      - `{ numRuns: 100 }`
+      - _Requirements: 9.3_
+    - [ ]* 13.4.2 Write property test for Property 19: Invalid form shows errors
+      - `// Feature: personal-portfolio-website, Property 19: Contact form invalid submission shows errors`
+      - Generator: `fc.record` with at least one field set to empty string or malformed email
+      - Assert inline validation errors are displayed and form does not reach success state
+      - `{ numRuns: 100 }`
+      - _Requirements: 9.4_
+  - [ ] 13.5 Write `src/__tests__/property/theme.property.test.ts`
+    - [ ]* 13.5.1 Write property test for Property 21: Theme preference persisted to localStorage
+      - `// Feature: personal-portfolio-website, Property 21: Theme preference persisted to localStorage`
+      - Generator: `fc.constantFrom('light', 'dark')`
+      - Assert `localStorage.getItem('portfolio-theme')` equals the toggled value after each toggle action
+      - `{ numRuns: 100 }`
+      - _Requirements: 11.5_
+  - [ ] 13.6 Write `src/__tests__/property/seo.property.test.ts`
+    - [ ]* 13.6.1 Write property test for Property 22: SEO metadata completeness per page
+      - `// Feature: personal-portfolio-website, Property 22: SEO metadata completeness per page`
+      - Generator: `fc.constantFrom('/', 'farmerpay-plus', 'latex-ocr-model', 'data-warehouse-modernization', 'analytics-dashboard-platform', 'web-metrics-analytics-system')`
+      - Assert returned metadata object has non-empty title, description, openGraph.title, openGraph.description, openGraph.images[0].url, and alternates.canonical
+      - `{ numRuns: 100 }`
+      - _Requirements: 12.1_
+    - [ ]* 13.6.2 Write property test for Property 23: Heading hierarchy correctness
+      - `// Feature: personal-portfolio-website, Property 23: Heading hierarchy correctness`
+      - Generator: `fc.constantFrom` of all page slugs plus homepage
+      - Assert exactly one H1 exists; all H2s appear after the H1; all H3s appear after at least one H2
+      - `{ numRuns: 100 }`
+      - _Requirements: 12.6_
+
+- [ ] 14. Final checkpoint — all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for a faster MVP
+- Each task references specific requirements for traceability
+- Property tests use `{ numRuns: 100 }` and include the tag comment `// Feature: personal-portfolio-website, Property N: ...`
+- All images use `next/image`; all external links use `target="_blank" rel="noopener noreferrer"`
+- `SectionWrapper` must check `window.matchMedia('(prefers-reduced-motion: reduce)')` and skip animations when true
+- The `portfolio-theme` localStorage key is the single source of truth for theme persistence
